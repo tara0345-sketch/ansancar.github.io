@@ -1,0 +1,141 @@
+첫페이지
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안산교회 승합차 & 펜션 예약 시스템</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #003366;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: #555;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .info-text {
+            text-align: center;
+            color: #777;
+            margin-bottom: 20px;
+        }
+        .calendar-section {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+            height: 600px;
+        }
+        .calendar-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        @media (max-width: 768px) {
+            .calendar-section {
+                height: 768px;
+                width: 768px;
+            }
+        }
+        .note {
+            font-size: 0.9em;
+            color: #999;
+            text-align: right;
+            margin-top: 10px;
+        }
+        .button-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 100px; /* 이 부분을 수정하여 여백을 크게 늘렸습니다. */
+        }
+        .button-link {
+            display: block;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            background-color: #003366;
+            border: 2px solid #003366;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: background-color 0.3s, border-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .button-link:hover {
+            background-color: #002244;
+            border-color: #002244;
+        }
+        .button-link.pension {
+            background-color: #34495e;
+            border-color: #34495e;
+        }
+        .button-link.pension:hover {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .button-link {
+                font-size: 1.2rem;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>안산교회 승합차 & 펜션 예약 시스템</h1>
+    <h2>승합차 & 펜션 신청 현황</h2>
+    <p class="info-text">현재 예약 상황을 확인해 보세요.</p>
+
+    <div class="calendar-section">
+        <iframe class="calendar-iframe"
+                src="https://calendar.google.com/calendar/embed?src=10263285edd19de93d9af3612d15a7c464b99f93d10f306e9a8576cbe181efe4%40group.calendar.google.com&ctz=Asia%2FSeoul&mode=month"
+                frameborder="0"
+                scrolling="no">
+        </iframe>
+        <p class="note">※ 캘린더는 실시간으로 업데이트되며, 스프레드시트의 '캘린더 동기화' 체크박스 활성화 후 반영됩니다.</p>
+    </div>
+
+    <div class="button-section">
+        <a href="https://choi-deokyong.github.io/ansancar.github.io/" class="button-link">1. 승합차 신청하기</a>
+        <a href="https://choi-deokyong.github.io/ansanpension/" class="button-link pension">2. 펜션 신청하기</a>
+    </div>
+
+</div>
+
+</body>
+</html>
