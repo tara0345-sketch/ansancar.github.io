@@ -131,8 +131,9 @@
     </div>
 
     <div class="button-section">
-        <a href="https://choi-deokyong.github.io/ansancar.github.io/" class="button-link">1. 승합차 신청하기</a>
-        <a href="https://choi-deokyong.github.io/ansanpension/" class="button-link pension">2. 펜션 신청하기</a>
+        <a href="./van.html" class="button-link">1. 승합차 신청하기</a>
+        <a href="./pension.html" class="button-link pension">2. 펜션 신청하기</a>
+
     </div>
 
 </div>
