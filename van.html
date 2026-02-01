@@ -4,8 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>안산교회 차량예약시스템</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <style>
+        /* [펜션신청코드]에서 가져온 로딩/메시지 스타일 */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        .spinner {
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-top: 8px solid #fff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message-box {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 1001;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-family: sans-serif;
+            max-width: 90%;
+        }
+
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message-box .close-btn {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: #003366;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* 기존 캘린더 스타일 유지 (절대 건드리지 않음) */
         .calendar-section {
             position: relative;
             width: 100%;
@@ -24,6 +100,8 @@
                 width: 100%;
             }
         }
+
+        /* 기존 컨테이너 및 폼 스타일 */
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -46,16 +124,17 @@
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 8px; /* 펜션 스타일과 통일 */
+            font-size: 1rem;
         }
 
+        /* Select 스타일 (펜션 스타일 적용) */
         select {
-            height: 50px;
-            font-size: 1.2rem;
+            height: 48px;
+            font-size: 1rem;
             padding: 8px 12px;
-            box-sizing: border-box;
             appearance: none;
-            border: 1px solid #ccc;
-            border-radius: 8px;
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             cursor: pointer;
@@ -67,6 +146,7 @@
             box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
         }
 
+        /* [펜션신청코드]의 날짜/시간 레이아웃 스타일 적용 */
         .datetime-group {
             display: flex;
             gap: 10px;
@@ -74,49 +154,47 @@
             width: 100%;
         }
 
-        /* ✅ input[type="date"] 디자인 강화 */
-        .datetime-group input[type="date"] {
-            flex: 1;
-            min-width: 120px;
-            height: 60px;
-            font-size: 1.4rem;
-            padding: 12px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #f5f5f5; /* 회색 배경 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            -webkit-appearance: none; /* iOS Safari 기본 UI 제거 */
-        }
-
-        .datetime-group select {
-            flex: 1;
-            min-width: 120px;
-            height: 50px;
-            font-size: 1.2rem;
-            padding: 8px 12px;
-            box-sizing: border-box;
-        }
-
-        .date-label {
-            color: #007bff;
-            font-weight: bold;
-            margin-right: 8px;
-            white-space: nowrap;
+        .mobile-only-label {
+            display: none;
         }
 
         @media (max-width: 600px) {
             .datetime-group {
                 flex-direction: column;
-                gap: 10px;
+                gap: 5px;
             }
-            .datetime-group input[type="date"],
-            .datetime-group select {
-                height: 70px;       /* 더 크게 */
-                font-size: 1.6rem;  /* 글씨 키움 */
+            
+            .mobile-only-label {
+                display: block;
+                color: #007bff;
+                font-weight: bold;
+                font-size: 1.2rem;
+                align-self: flex-start;
+                margin-bottom: 5px;
+            }
+            
+            .datetime-group input,
+            .datetime-group select,
+            select {
+                height: 48px;
+                font-size: 1rem;
             }
         }
+        
+        /* Flatpickr 커스터마이징 */
+        .flatpickr-input {
+            height: 48px;
+            font-size: 1rem;
+            padding: 8px 12px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            -webkit-appearance: none;
+        }
 
+        /* 약관 및 버튼 스타일 유지 */
         .agreement-section {
             border: 1px solid #ccc;
             padding: 15px;
@@ -130,7 +208,6 @@
             margin-top: 15px;
             text-align: center;
         }
-
         .agreement-checkbox-group input[type="checkbox"] {
             width: 20px;
             height: 20px;
@@ -150,29 +227,14 @@
             cursor: pointer;
             font-size: 1rem;
         }
-
         .submit-button:hover {
             background-color: #002244;
         }
-
-        .message {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 5px;
-            font-size: 1.1em;
-            text-align: center;
-            display: none;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+        
+        /* Utility styles for text alignment used in agreement */
+        .pl-4 { padding-left: 1rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-gray-500 { color: #6b7280; }
 
         .reservation-form h2 {
             margin-bottom: 4em;
@@ -180,6 +242,16 @@
     </style>
 </head>
 <body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">접수중입니다 잠시만 기다려주세요</div>
+    </div>
+    
+    <div id="messageBox" class="message-box">
+        <p id="messageText"></p>
+        <button class="close-btn" onclick="hideMessageBox()">확인</button>
+    </div>
+
     <div class="container">
         <h1>안산교회 차량예약시스템</h1>
 
@@ -199,7 +271,7 @@
                 <input type="text" id="applicantName" name="applicantName" required>
             </div>
 
-                        <div class="form-group">
+            <div class="form-group">
                 <label>3. 차량 이용 시작 날짜와 시간</label>
                 <div class="datetime-group">
                     <label for="departureDate" class="mobile-only-label">날짜 선택</label>
@@ -234,6 +306,7 @@
                 </div>
                 <input type="hidden" id="arrivalDateTime" name="arrivalDateTime">
             </div>
+
             <div class="form-group">
                 <label for="numberOfPeople">5. 몇 명이 가시나요?</label>
                 <input type="text" id="numberOfPeople" name="numberOfPeople" required placeholder="예: 5명">
@@ -311,10 +384,30 @@
         </form>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('vehicleReservationForm');
-            const webAppUrl = 'https://script.google.com/macros/s/AKfycbyg7IXdiIqTrnr1qPCys5kOaf-GvSztcerl-D3IWTiVBipclr0b1_SA2D21nPZgXQs1/exec';
+            // 주소 변경됨: 펜션 코드와 동일한 주소 적용
+            const webAppUrl = 'https://script.google.com/macros/s/AKfycbxoUTP6koqMHtsvS2CLTH3hY5Bmx3dHpJwD3RUBbpSr6eE6yx76keNoQrK9D3SUqeRY/exec';
+            
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+
+            // 메시지 박스 보이기
+            function showMessageBox(message, type) {
+                messageText.textContent = message;
+                messageBox.className = 'message-box ' + type;
+                messageBox.style.display = 'block';
+            }
+
+            // 메시지 박스 숨기기
+            window.hideMessageBox = function() {
+                messageBox.style.display = 'none';
+            };
 
             const departureHourSelect = document.getElementById('departureHour');
             const arrivalHourSelect = document.getElementById('arrivalHour');
@@ -327,8 +420,21 @@
                 arrivalHourSelect.add(option2);
             }
 
+            // Flatpickr 적용 (한국어)
+            flatpickr("#departureDate", {
+                dateFormat: "Y-m-d",
+                locale: "ko"
+            });
+            flatpickr("#arrivalDate", {
+                dateFormat: "Y-m-d",
+                locale: "ko"
+            });
+
             form.addEventListener('submit', async function (event) {
                 event.preventDefault();
+
+                // 로딩 화면 표시
+                loadingOverlay.style.display = 'flex';
 
                 const departureDate = document.getElementById('departureDate').value;
                 const departureHour = document.getElementById('departureHour').value;
@@ -348,7 +454,8 @@
                 }
 
                 if (!data.agreement) {
-                    alert('안내사항에 동의해야 신청할 수 있습니다.');
+                    showMessageBox('안내사항에 동의해야 신청할 수 있습니다.', 'error');
+                    loadingOverlay.style.display = 'none';
                     return;
                 }
 
@@ -363,20 +470,25 @@
                         body: new URLSearchParams(data).toString()
                     });
 
+                    // 로딩 화면 숨기기
+                    loadingOverlay.style.display = 'none';
+
                     if (response.ok) {
                         const result = await response.json();
                         if (result.status === 'success') {
-                            alert('예약 신청이 성공적으로 접수되었습니다!');
+                            showMessageBox('예약 신청이 성공적으로 접수되었습니다!', 'success');
                             form.reset();
                         } else {
-                            alert('예약 신청 중 오류가 발생했습니다: ' + result.message);
+                            showMessageBox('예약 신청 중 오류가 발생했습니다: ' + result.message, 'error');
                         }
                     } else {
-                        alert('서버 통신 중 오류가 발생했습니다. 응답 코드: ' + response.status);
+                        showMessageBox('서버 통신 중 오류가 발생했습니다. 응답 코드: ' + response.status, 'error');
                     }
                 } catch (error) {
+                    // 로딩 화면 숨기기
+                    loadingOverlay.style.display = 'none';
                     console.error('Error submitting form:', error);
-                    alert('네트워크 오류 또는 서버와의 통신 문제로 신청에 실패했습니다.');
+                    showMessageBox('네트워크 오류 또는 서버와의 통신 문제로 신청에 실패했습니다.', 'error');
                 }
             });
         });
