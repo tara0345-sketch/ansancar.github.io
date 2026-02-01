@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>안산교회 차량예약시스템</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
+    
     <style>
-        /* [펜션신청코드]에서 가져온 로딩/메시지 스타일 */
+        /* 로딩 오버레이 스타일 */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -44,6 +44,7 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* 메시지 박스 스타일 */
         .message-box {
             display: none;
             position: fixed;
@@ -81,7 +82,7 @@
             cursor: pointer;
         }
 
-        /* 기존 캘린더 스타일 유지 (절대 건드리지 않음) */
+        /* 캘린더 섹션 */
         .calendar-section {
             position: relative;
             width: 100%;
@@ -101,7 +102,7 @@
             }
         }
 
-        /* 기존 컨테이너 및 폼 스타일 */
+        /* 컨테이너 및 폼 스타일 */
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -125,11 +126,11 @@
             padding: 8px;
             box-sizing: border-box;
             border: 1px solid #ccc;
-            border-radius: 8px; /* 펜션 스타일과 통일 */
+            border-radius: 8px;
             font-size: 1rem;
         }
 
-        /* Select 스타일 (펜션 스타일 적용) */
+        /* Select 스타일 */
         select {
             height: 48px;
             font-size: 1rem;
@@ -146,7 +147,7 @@
             box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
         }
 
-        /* [펜션신청코드]의 날짜/시간 레이아웃 스타일 적용 */
+        /* 날짜/시간 그룹 스타일 */
         .datetime-group {
             display: flex;
             gap: 10px;
@@ -194,7 +195,7 @@
             -webkit-appearance: none;
         }
 
-        /* 약관 및 버튼 스타일 유지 */
+        /* 약관 영역 */
         .agreement-section {
             border: 1px solid #ccc;
             padding: 15px;
@@ -231,7 +232,7 @@
             background-color: #002244;
         }
         
-        /* Utility styles for text alignment used in agreement */
+        /* 약관 텍스트 유틸리티 */
         .pl-4 { padding-left: 1rem; }
         .text-sm { font-size: 0.875rem; }
         .text-gray-500 { color: #6b7280; }
@@ -390,8 +391,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('vehicleReservationForm');
-            // 주소 변경됨: 펜션 코드와 동일한 주소 적용
-            const webAppUrl = 'https://script.google.com/macros/s/AKfycbxoUTP6koqMHtsvS2CLTH3hY5Bmx3dHpJwD3RUBbpSr6eE6yx76keNoQrK9D3SUqeRY/exec';
+            
+            // ✅ 교체된 차량예약용 웹앱 URL
+            const webAppUrl = 'https://script.google.com/macros/s/AKfycbyg7IXdiIqTrnr1qPCys5kOaf-GvSztcerl-D3IWTiVBipclr0b1_SA2D21nPZgXQs1/exec';
             
             const loadingOverlay = document.getElementById('loadingOverlay');
             const messageBox = document.getElementById('messageBox');
@@ -420,12 +422,17 @@
                 arrivalHourSelect.add(option2);
             }
 
-            // Flatpickr 적용 (한국어)
-            flatpickr("#departureDate", {
+            // Flatpickr 적용 (한국어) - 시작일 설정 시 종료일 자동 제한 기능 추가
+            const fpDeparture = flatpickr("#departureDate", {
                 dateFormat: "Y-m-d",
-                locale: "ko"
+                locale: "ko",
+                onChange: function(selectedDates, dateStr, instance) {
+                    // 시작 날짜를 선택하면 종료 날짜는 그 이후만 선택 가능하도록 설정
+                    fpArrival.set('minDate', dateStr);
+                }
             });
-            flatpickr("#arrivalDate", {
+
+            const fpArrival = flatpickr("#arrivalDate", {
                 dateFormat: "Y-m-d",
                 locale: "ko"
             });
@@ -446,6 +453,17 @@
 
                 document.getElementById('departureDateTime').value = `${departureDate}T${departureHour}:${departureMinute}`;
                 document.getElementById('arrivalDateTime').value = `${arrivalDate}T${arrivalHour}:${arrivalMinute}`;
+
+                // 간단한 시간 검증: 같은 날짜일 경우 종료 시간이 시작 시간보다 빨라서는 안 됨
+                if (departureDate === arrivalDate) {
+                    const startVal = parseInt(departureHour + departureMinute);
+                    const endVal = parseInt(arrivalHour + arrivalMinute);
+                    if (startVal >= endVal) {
+                        showMessageBox('종료 시간은 시작 시간보다 늦어야 합니다.', 'error');
+                        loadingOverlay.style.display = 'none';
+                        return;
+                    }
+                }
 
                 const formData = new FormData(form);
                 const data = {};
